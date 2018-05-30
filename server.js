@@ -47,10 +47,34 @@ app.post('/shopping-list', jsonParser, (req, res) => {
   res.status(201).json(item);
 });
 
+app.put('/shopping-list/:id', jsonParser, (req, res) => {
+  const requiredFields = ['name', 'budget', 'id'];
+  for (let i=0; i<requiredFields.length; i++) {
+    const field = requiredFields[i];
+    if (!(field in req.body)) {
+      const message = `Missing \`${field}\` in request body`
+      console.error(message);
+      return res.status(400).send(message);
+    }
+  }
+  if (req.params.id !== req.body.id) {
+    const message = `Request path id (${req.params.id}) and request body id (${req.body.id}) must match`;
+    console.error(message);
+    return res.status(400).send(message);
+  }
+  console.log(`Updating shopping list item \`${req.params.id}\``);
+  let updatedItem = ShoppingList.update({
+    id: req.params.id,
+    name: req.body.name,
+    budget: req.body.budget
+  });
+  res.status(200).json(updatedItem);
+});
+
 app.delete('/shopping-list/:id', (req, res) => {
   ShoppingList.delete(req.params.id);
   console.log(`Deleted shopping list item \`${req.params.id}\``);
-  res.status(204).end();
+  res.status(200).end();
 });
 
 app.get('/recipes', (req, res) => {
